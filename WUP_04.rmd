@@ -1,18 +1,26 @@
 ---
 title: "WUP_04"
-author: "Put your name here!"
-date: "fall 2023"
+author: "Zoilo Franco"
+date: "Spring 2026"
 output:
   html_document:
     df_print: paged
 ---
 
 ```{r include=FALSE,echo=FALSE}
-require(knitr)
-require(tidyverse)
 require(tigerstats)
-
+require(knitr)
+require(foreign)
+require(haven)
 ```
+
+```{r}
+GSS <-read.csv(file="GSScsv.csv")
+GSS <- droplevels(GSS)
+mydata <- select(GSS,WORDSUM,DEGREE)
+mydata <- na.omit(mydata)
+```
+
 
 # Introduction
 
@@ -25,7 +33,12 @@ $H_a$ There is a significant difference in average score on the WORDSUM test bet
 # Methods
 
 <!--Mention that you intend to use chatGPT to the greatest extent possible. Give credit to chatGPT when you use it to create code in your report. Decide on your methods:  use "variable analysis" or other appropriate descriptors.  Make sure to choose at least one graphical method and at least one numerical method.!-->
-
+    
+WORDSUM is a numerical variable and DEGREE is a categorical variable.   
+So we use the Num~Cat helper file   
+    
+because the categorical variable, DEGREE, has 5 levels of variables we use the ANOVA test.
+    
 # Results
 
 <!--Divide this section into two sub-sections:  One for your descriptive  results and one for your inferential results.!-->
@@ -36,15 +49,45 @@ $H_a$ There is a significant difference in average score on the WORDSUM test bet
 
 <!--Graphical results here.  Make sure to show your code.  Provide appropriate labels for axes, giving units if possible, and provide a good title for the graph, too.  Use the graphical results to describe the patterns if any that exist in the data as focused toward the research question!-->
 
+```{r}
+basicCN <- ggplot(mydata,aes(x=DEGREE,y=WORDSUM))
+basicCN + geom_boxplot(notch=TRUE,outlier.color = "red") + stat_boxplot(geom ='errorbar') + labs(title="WORDSUM Score Based on Degree")
+```
+    
+This boxplot shows that on average students that are in college or have a college education typically score higher on the WORDSUM test than students of high school education.
+    
 ### Numerical Descriptive Results
 
 <!--Numerical results go here. Use the numerical results to describe the patterns if any that exist in the data as focused toward the research question!-->
 
+```{r}
+favstats(WORDSUM~DEGREE,data=mydata)
+```
+    
+Through the mean and median the data shows that people of higher college eductation score have an overall higher score on the WORDSUM test than people of highschool education. THat also the WORDSUM score increases on average the higher the educational level between at least 2 levels of separation of education degree.
+    
 ## Inferential Results
 
 <!--State hypothesis clearly.  Make sure your discussion of the inferential test covers all the aspects that the test output produces, such as test statistic, p-value etc.  Make a decision about the null hypothesis, explain the assumptions on which the selected test/procedure was based, and why the chosen procedure satisfys the assumptions and is appropriate to answer the research question!-->
-
-
+    
+```{r}
+model1 <- aov(WORDSUM~DEGREE,data=mydata)
+summary.aov(model1)
+```
+    
+The anova model shows a p-value of 0.000236 which is less that 0.05. Rejects the null Hypothesis. This means we have evidence that there is a difference between the average students WORDSUM scores based on at least two-levels of separation of education degree.
+    
+```{r}
+#we specify the margins starting at the bottom and proceeding clockwise - thus 8.7 is the left side margin to hold the names of the factors
+par(mar = c(3, 17, 2, 2))
+plot(TukeyHSD(model1),las=2,cex.axis=0.8)
+```
+    
+This TukeyHSD model tells us where the differences are. These difference occur with the comparisons HIGH SCHOOL-GRADUATE and LT HIGH SCHOOL-GRADUATE.
+    
 # Discussion and Conclusion
 
 <!--Discussion and conclusion here.  If you found a relationship be sure to consider whether the relationship occurs because one of the variavbles causes the other, or whether they perhasps are related for some other reason.  Watch the chapter 6 videos from the GeorgeTown videos collection.!-->
+    
+The original question was whether there is a difference on the average score of students on the WORDSUM test based on at least two different levels of educational degree. Through the use of a boxplot that shows in general people of college level education have a higher average score on the WORDSUM test as well as the average increasing with higher levels of education. As well as the anova test showing a p-value of 0.000236 which is less that 0.05. Rejecting the null Hypothesis. This means we have evidence that there is a difference on the average score of students on the WORDSUM test based on at least two different levels of educational degree. Lastly the TUKEYHSD model tells us where there is a significant difference based on at least two different levels of educational degree in which are HIGH SCHOOL-GRADUATE and LT HIGH SCHOOL-GRADUATE.
+    
